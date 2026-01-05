@@ -6,7 +6,7 @@ metadata:
     app: lhw-openproject-postgres-backup
 spec:
   accessModes:
-  - ReadWriteMany
+  - ReadWriteOnce
   resources:
     requests:
       storage: 2G 
