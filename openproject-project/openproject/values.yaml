@@ -642,11 +642,11 @@ openproject:
 
   ## Define the tmp storage sizes
   #
-  tmpVolumesStorage: "5Gi"
+  tmpVolumesStorage: "1Gi"
 
   ## Define the class of the tmp storage
   #
-  tmpVolumesStorageClassName: "longhorn"
+  tmpVolumesStorageClassName: "gp2"
 
   ## Define custom annotations of tmp storage
   #
@@ -682,10 +682,10 @@ persistence:
 
   ## Define the volume size.
   #
-  size: "10Gi"
+  size: "2Gi"
 
   ## Define the class of PV.
-  storageClassName: "longhorn"
+  storageClassName: "gp2"
 
 ## Whether to use an S3-compatible object storage to store OpenProject attachments.
 ## If this is enabled, files will NOT be stored in the mounted volume configured in `persistence` above.
