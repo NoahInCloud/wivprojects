@@ -10,7 +10,7 @@ spec:
   postgresql:
     version: "17"
     parameters:
-      shared_buffers: "1GB" # Default: 128MB; Recommended: 25% RAM
+      shared_buffers: "250MB" # Default: 128MB; Recommended: 25% RAM
       max_locks_per_transaction: "128" # Default: 64;
       log_statement: "ddl"
       log_connections: "on"
