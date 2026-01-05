@@ -226,11 +226,11 @@ resourcesPreset: "nano"
 ## Example:
 ## resources:
 ##   requests:
-##     cpu: 2
+##     cpu: 250m
 ##     memory: 512Mi
 ##   limits:
-##     cpu: 3
-##     memory: 1024Mi
+##     cpu: 500m
+##     memory: 512Mi
 ##
 resources: {}
 ## Configure Pods Security Context
@@ -657,11 +657,11 @@ volumePermissions:
   ## Example:
   ## resources:
   ##   requests:
-  ##     cpu: 2
+  ##     cpu: 250m
   ##     memory: 512Mi
   ##   limits:
-  ##     cpu: 3
-  ##     memory: 1024Mi
+  ##     cpu: 500m
+  ##     memory: 512Mi
   ##
   resources: {}
   ## Init container' Security Context
@@ -716,11 +716,11 @@ metrics:
   ## Example:
   ## resources:
   ##   requests:
-  ##     cpu: 2
+  ##     cpu: 250m
   ##     memory: 512Mi
   ##   limits:
-  ##     cpu: 3
-  ##     memory: 1024Mi
+  ##     cpu: 500m
+  ##     memory: 512Mi
   ##
   resources: {}
   ## Configure Metrics Container Security Context
