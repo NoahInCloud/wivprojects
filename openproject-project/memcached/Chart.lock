@@ -1,0 +1,6 @@
+dependencies:
+- name: common
+  repository: oci://harbor.wopc.wivertis.de/wopc/bitnami
+  version: 2.31.4
+digest: sha256:d7d90f62e7932a2c832073b214b121ba22caea78b0e1668019e308a9afd43b02
+generated: "2025-12-30T14:03:00.9784274+01:00"

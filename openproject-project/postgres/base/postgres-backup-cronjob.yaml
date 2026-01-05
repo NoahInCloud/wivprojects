@@ -1,0 +1,180 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: lhw-openproject-database-backup
+  labels:
+    app: lhw-openproject-database-backup
+spec:
+  schedule: "00 23 * * 1-5"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: lhw-openproject-database-backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: lhw-openproject-database-backup
+            image: harbor.wopc.wivertis.de/docker_proxy/postgres:17
+            imagePullPolicy: IfNotPresent
+            command: ["/bin/sh", "-c"]
+            args:
+            - |
+              set -eu
+              
+              # Defaults for safety
+              RETENTION_DAYS="${RETENTION_DAYS:-7}"
+              
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              LOG_DIR="/backups/logs"
+              BACKUP_DIR="/backups"
+              
+              mkdir -p ${LOG_DIR}
+              
+              echo "=========================================="
+              echo "PostgreSQL Backup Started: ${TIMESTAMP}"
+              echo "Host: ${PGHOST} | User: ${PGUSER}"
+              echo "=========================================="
+              
+              # Disk space check
+              AVAILABLE_GB=$(df -BG ${BACKUP_DIR} | awk 'NR==2 {print $4}' | sed 's/G//')
+              USED_GB=$(df -BG ${BACKUP_DIR} | awk 'NR==2 {print $3}' | sed 's/G//')
+              TOTAL_GB=$(df -BG ${BACKUP_DIR} | awk 'NR==2 {print $2}' | sed 's/G//')
+              echo "Disk space: ${USED_GB}GB used / ${TOTAL_GB}GB total (${AVAILABLE_GB}GB available)"
+              
+              if [ "$AVAILABLE_GB" -lt 5 ]; then
+                echo "WARNING: Less than 5GB available. Cleaning old backups..."
+                find ${BACKUP_DIR} -name "backup_*" -type f -mtime +1 -delete
+                find ${LOG_DIR} -name "backup_*.log" -type f -mtime +1 -delete
+                AVAILABLE_GB=$(df -BG ${BACKUP_DIR} | awk 'NR==2 {print $4}' | sed 's/G//')
+                if [ "$AVAILABLE_GB" -lt 5 ]; then
+                  echo "ERROR: Still not enough space (${AVAILABLE_GB}GB). Aborting."
+                  exit 1
+                fi
+              fi
+              
+              # Connection test
+              echo "Testing connection..."
+              PG_VERSION=$(psql -d postgres -t -c "SELECT version();" | head -1 | xargs)
+              echo "Connected: ${PG_VERSION}"
+              
+              # List databases
+              echo "Databases:"
+              psql -d postgres -c "SELECT datname, pg_size_pretty(pg_database_size(datname)) as size FROM pg_database WHERE datistemplate = false ORDER BY pg_database_size(datname);"
+              
+              # 1. BACKUP GLOBALS (users, roles)
+              echo "=========================================="
+              echo "Backing up globals (users, roles)..."
+              START=$(date +%s)
+              
+              if pg_dumpall --globals-only --no-sync 2>&1 | gzip -1 > ${BACKUP_DIR}/backup_${TIMESTAMP}_globals.sql.gz; then
+                END=$(date +%s)
+                DURATION=$((END - START))
+                SIZE=$(du -h ${BACKUP_DIR}/backup_${TIMESTAMP}_globals.sql.gz | cut -f1)
+                echo "Globals completed in ${DURATION}s (${SIZE})"
+              else
+                echo "Globals backup failed"
+                exit 1
+              fi
+              
+              # 2. BACKUP INDIVIDUAL DATABASES
+              echo "=========================================="
+              echo "Backing up individual databases..."
+              
+              FAILED_DBS=""
+              TOTAL_START=$(date +%s)
+              
+              # Get all databases (sh-compatible)
+              DBS=$(psql -d postgres -tA -c "SELECT datname FROM pg_database WHERE datistemplate = false ORDER BY pg_database_size(datname);")
+              
+              echo "Found databases to backup"
+              
+              for DB in $DBS; do
+                DB_SIZE=$(psql -d postgres -t -c "SELECT pg_size_pretty(pg_database_size('$DB'));" | xargs)
+                echo "Backing up: $DB (${DB_SIZE})"
+                START=$(date +%s)
+                
+                if pg_dump -d ${DB} --create --no-sync --lock-wait-timeout=30000 2>&1 | gzip -1 > ${BACKUP_DIR}/backup_${TIMESTAMP}_${DB}.sql.gz; then
+                  END=$(date +%s)
+                  DURATION=$((END - START))
+                  DUMP_SIZE=$(du -h ${BACKUP_DIR}/backup_${TIMESTAMP}_${DB}.sql.gz | cut -f1)
+                  echo "${DB} completed in ${DURATION}s (${DUMP_SIZE})"
+                  
+                  # Quick integrity check
+                  if ! gunzip -t ${BACKUP_DIR}/backup_${TIMESTAMP}_${DB}.sql.gz 2>/dev/null; then
+                    echo "Warning: ${DB} backup may be corrupted"
+                    FAILED_DBS="${FAILED_DBS} ${DB}"
+                  fi
+                else
+                  echo "${DB} backup failed"
+                  FAILED_DBS="${FAILED_DBS} ${DB}"
+                  rm -f ${BACKUP_DIR}/backup_${TIMESTAMP}_${DB}.sql.gz
+                fi
+              done
+              
+              TOTAL_END=$(date +%s)
+              TOTAL_DURATION=$((TOTAL_END - TOTAL_START))
+              
+              # Check for failures
+              if [ -n "$FAILED_DBS" ]; then
+                echo "=========================================="
+                echo "Some backups failed: ${FAILED_DBS}"
+                echo "=========================================="
+                exit 1
+              fi
+              
+              # 3. CLEANUP OLD BACKUPS
+              echo "=========================================="
+              echo "Cleaning up old backups (retention: ${RETENTION_DAYS} days)..."
+              
+              DELETED_BACKUPS=$(find ${BACKUP_DIR} -name "backup_*" -type f -mtime +${RETENTION_DAYS} -delete -print 2>/dev/null | wc -l)
+              DELETED_LOGS=$(find ${LOG_DIR} -name "backup_*.log" -type f -mtime +${RETENTION_DAYS} -delete -print 2>/dev/null | wc -l)
+              
+              echo "Deleted: ${DELETED_BACKUPS} backup file(s), ${DELETED_LOGS} log file(s)"
+              
+              # 4. SUMMARY
+              BACKUP_COUNT=$(find ${BACKUP_DIR} -name "backup_${TIMESTAMP}_*" -type f 2>/dev/null | wc -l)
+              CURRENT_BACKUPS=$(find ${BACKUP_DIR} -name "backup_*" -type f 2>/dev/null | wc -l)
+              STORAGE_USED=$(du -sh ${BACKUP_DIR} | cut -f1)
+              
+              echo "=========================================="
+              echo "Backup Completed Successfully"
+              echo "=========================================="
+              echo "Duration: ${TOTAL_DURATION}s"
+              echo "Files created: ${BACKUP_COUNT}"
+              echo "Total backups on disk: ${CURRENT_BACKUPS}"
+              echo "Storage used: ${STORAGE_USED}"
+              df -h ${BACKUP_DIR} | tail -1
+              echo "=========================================="
+              
+            env:
+            - name: PGHOST
+              value: "lhw-openproject-database"
+            - name: PGUSER
+              value: "postgres"
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres.lhw-openproject-database.credentials.postgresql.acid.zalan.do
+                  key: password
+            - name: RETENTION_DAYS
+              value: "5"
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backups
+            resources:
+              requests:
+                memory: "1Gi"
+                cpu: "1000m"
+              limits:
+                memory: "4Gi"
+                cpu: "2000m"
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: lhw-openproject-postgres-backup

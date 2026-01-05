@@ -1,0 +1,30 @@
+---
+apiVersion: v2
+name: openproject
+description: A Helm chart for running OpenProject via Kubernetes
+home: https://www.openproject.org/
+icon: https://charts.openproject.org/logo.svg
+type: application
+appVersion: 16.6.3
+version: 11.6.1
+maintainers:
+- name: OpenProject
+  url: https://github.com/opf/helm-charts
+dependencies:
+- name: "common"
+  repository: oci://harbor.wopc.wivertis.de/wopc/bitnami
+  tags:
+  - bitnami-common
+  version: 2.31.4  
+annotations:
+  artifacthub.io/license: GPL-3.0-only
+  artifacthub.io/links: |
+    - name: Homepage
+      url: https://www.openproject.org/
+    - name: OpenProject Community
+      url: https://community.openproject.org
+    - name: support
+      url: https://www.openproject.org/docs/development/report-a-bug/
+  artifacthub.io/signKey: |
+    fingerprint: CB1CA0488A75B7471EA1B087CF56DD6A0AE260E5
+    url: https://keys.openpgp.org/vks/v1/by-fingerprint/CB1CA0488A75B7471EA1B087CF56DD6A0AE260E5

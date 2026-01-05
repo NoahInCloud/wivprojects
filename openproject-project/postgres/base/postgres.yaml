@@ -1,0 +1,94 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: lhw-openproject-database
+spec:
+  dockerImage: ghcr.io/zalando/spilo-17:4.0-p2
+  teamId: "de-knowledge"
+  numberOfInstances: 2
+
+  postgresql:
+    version: "17"
+    parameters:
+      shared_buffers: "1GB" # Default: 128MB; Recommended: 25% RAM
+      max_locks_per_transaction: "128" # Default: 64;
+      log_statement: "ddl"
+      log_connections: "on"
+
+  patroni:
+    initdb:
+      encoding: "UTF8"
+      locale-provider: "icu"
+      icu-locale: "de-DE"
+
+    pg_hba:
+      - local     all             all           trust
+      - hostssl   all             +zalandos     127.0.0.1/32       pam
+      - host      all             all           127.0.0.1/32       md5
+      - hostssl   all             +zalandos     ::1/128            pam
+      - host      all             all           ::1/128            md5
+      - local     replication     standby       trust
+      - hostssl   replication     standby       all                md5
+      - hostnossl all             all           all                reject
+      - hostssl   all             +zalandos     all                pam
+      - hostssl   all postgres,opdbuser all md5
+
+
+  users:
+  #  admin:
+    #  - superuser
+   #   - createdb
+
+    opdbuser: 
+      - login
+      - createdb
+#
+ # preparedDatabases:
+ #   opdb:
+    #  defaultUsers: true
+     # schemas:
+        #public:
+       #   defaultRoles: true
+      #    defaultUsers: true
+     #   dataanalysis:
+   #       defaultRoles: true
+    #      defaultUsers: true
+
+  databases:
+    opdb : opdbuser
+
+
+  # enableMasterLoadBalancer: false
+  # enableReplicaLoadBalancer: false
+  # enableConnectionPooler: false
+  # enableReplicaConnectionPooler: false
+  # enableMasterPoolerLoadBalancer: false
+  # enableReplicaPoolerLoadBalancer: false
+  
+  allowedSourceRanges:
+  #  - 0.0.0.0/0
+    - 127.0.0.1/32
+
+  volume:
+    size: 10Gi
+    storageClass: longhorn  
+
+  enableShmVolume: true
+
+  additionalVolumes:
+    - name: backup-storage
+      mountPath: /backups
+      targetContainers:
+        - all
+      volumeSource:
+        persistentVolumeClaim:
+          claimName: lhw-openproject-postgres-backup
+          readOnly: false
+
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "2Gi"
+    limits:
+      cpu: "2000m"
+      memory: "8Gi"

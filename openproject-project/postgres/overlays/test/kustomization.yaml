@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: lhw-openproject-test
+
+resources:
+- ../../base
+
+labels:
+- pairs:
+    environment: test
+
+patches:
+
+# PostgreSQL Database Storage
+- patch: |-
+    - op: replace
+      path: /spec/volume/storage
+      value: longhorn-no-backup
+  target:
+    kind: postgresql
+    name: lhw-openproject-database
+
+# Backup PVC StorageClass + Size
+- patch: |-
+    - op: add
+      path: /spec/storageClassName
+      value: longhorn-dev
+    - op: replace
+      path: /spec/resources/requests/storage
+      value: 10Gi
+  target:
+    kind: PersistentVolumeClaim
+    name: lhw-openproject-postgres-backup
+
+- patch: |-
+    - op: replace
+      path: /spec/jobTemplate/spec/template/spec/containers/0/env/3/value
+      value: "14"
+  target:
+    kind: CronJob
+    name: lhw-openproject-postgres-backup
