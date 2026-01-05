@@ -85,8 +85,8 @@ diagnosticMode:
 ## @param image.debug Specify if debug values should be set
 ##
 image:
-  registry: harbor.wopc.wivertis.de
-  repository: docker_proxy/library/memcached
+  registry: docker.io
+  repository: memcached
   tag: 1.6.39
   digest: ""
   ## Specify a imagePullPolicy
