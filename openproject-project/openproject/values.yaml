@@ -457,8 +457,8 @@ cron:
       memory: "256Mi"
       cpu: "250m"
     limits:
-      memory: "1Gi"
-      cpu: "1"
+      memory: "2Gi"
+      cpu: "2"
 
 # Define the workers to run, their queues, max threads, replicas, strategy, and resources
 workers:
