@@ -124,9 +124,9 @@ appInit:
   resourcesPreset: ~
   resources:
     limits:
-      memory: "2Gi"
-    requests:
       memory: "1Gi"
+    requests:
+      memory: "500Mi"
 
 ## Define and create Kubernetes Service.
 ##
@@ -479,8 +479,8 @@ workers:
         memory: "512Mi"
         cpu: "250m"
       limits:
-        memory: "4Gi"
-        cpu: "4"
+        memory: "1Gi"
+        cpu: "1"
 
 ## WebSocket backend for use with real time collaboration features.
 hocuspocus:
@@ -535,8 +535,8 @@ hocuspocus:
       memory: "256Mi"
       cpu: "250m"
     limits:
-      memory: "1Gi"
-      cpu: "2"
+      memory: "500Mi"
+      cpu: "1"
 
 ## OpenProject related settings.
 ##
@@ -1184,8 +1184,8 @@ resources:
     memory: "512Mi"
     cpu: "250m"
   limits:
-    memory: "4Gi"
-    cpu: "4"
+    memory: "1Gi"
+    cpu: "1"
 
 ## Define and create Kubernetes Service.
 ##
