@@ -5,7 +5,7 @@ metadata:
 spec:
   dockerImage: ghcr.io/zalando/spilo-17:4.0-p2
   teamId: "de-knowledge"
-  numberOfInstances: 2
+  numberOfInstances: 1
 
   postgresql:
     version: "17"
