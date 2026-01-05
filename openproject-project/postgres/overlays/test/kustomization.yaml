@@ -15,8 +15,8 @@ patches:
 # PostgreSQL Database Storage
 - patch: |-
     - op: replace
-      path: /spec/volume/storage
-      value: longhorn-no-backup
+      path: /spec/volume/storageClass
+      value: gp2
   target:
     kind: postgresql
     name: lhw-openproject-database
@@ -25,10 +25,10 @@ patches:
 - patch: |-
     - op: add
       path: /spec/storageClassName
-      value: longhorn-dev
+      value: gp2
     - op: replace
       path: /spec/resources/requests/storage
-      value: 10Gi
+      value: 2Gi
   target:
     kind: PersistentVolumeClaim
     name: lhw-openproject-postgres-backup
