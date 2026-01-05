@@ -56,7 +56,7 @@ spec:
     #      defaultUsers: true
 
   databases:
-    opdb : opdbuser
+    opdb: opdbuser
 
 
   # enableMasterLoadBalancer: false
@@ -67,11 +67,11 @@ spec:
   # enableReplicaPoolerLoadBalancer: false
   
   allowedSourceRanges:
-  #  - 0.0.0.0/0
-    - 127.0.0.1/32
+    - 0.0.0.0/0
+   
 
   volume:
-    size: 10Gi
+    size: 5Gi
     storageClass: longhorn  
 
   enableShmVolume: true
