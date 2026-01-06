@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  DB_HOST: poc-postgres-postgresql
+  DB_NAME: pocdb
+  DB_PORT: "5432"
+  DB_USER: pocapp
+  ENVIRONMENT: production
+  PUBLIC_URL: https://prod.example.local
+kind: ConfigMap
+metadata:
+  name: poc-demo-app-config
+  namespace: poc-cfg-prod

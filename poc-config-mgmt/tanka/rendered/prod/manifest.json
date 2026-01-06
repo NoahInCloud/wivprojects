@@ -1,0 +1,10 @@
+{
+    "apps-v1.Deployment-poc-demo-app.yaml": "environments/prod/main.jsonnet",
+    "apps-v1.StatefulSet-poc-postgres-postgresql.yaml": "environments/prod/main.jsonnet",
+    "batch-v1.CronJob-poc-postgres-backup.yaml": "environments/prod/main.jsonnet",
+    "external-secrets.io-v1.ExternalSecret-poc-db-credentials.yaml": "environments/prod/main.jsonnet",
+    "v1.ConfigMap-poc-demo-app-config.yaml": "environments/prod/main.jsonnet",
+    "v1.Namespace-poc-cfg-prod.yaml": "environments/prod/main.jsonnet",
+    "v1.Service-poc-demo-app.yaml": "environments/prod/main.jsonnet",
+    "v1.Service-poc-postgres-postgresql.yaml": "environments/prod/main.jsonnet"
+}

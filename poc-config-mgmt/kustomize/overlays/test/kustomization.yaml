@@ -1,0 +1,43 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: poc-cfg-test
+
+resources:
+  - ../../base
+
+labels:
+  - pairs:
+      environment: test
+
+# Override Helm values for test environment
+helmCharts:
+  - name: postgresql
+    repo: https://charts.bitnami.com/bitnami
+    version: "16.4.5"
+    releaseName: poc-postgres
+    namespace: poc-cfg-test
+    includeCRDs: false
+    valuesFile: values-postgres-test.yaml
+
+patches:
+  # Update ConfigMap for test environment
+  - target:
+      kind: ConfigMap
+      name: poc-demo-app-config
+    patch: |-
+      - op: replace
+        path: /data/PUBLIC_URL
+        value: "https://test.example.local"
+      - op: replace
+        path: /data/ENVIRONMENT
+        value: "test"
+  
+  # Use test image tag
+  - target:
+      kind: Deployment
+      name: poc-demo-app
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: "nginx:1.25-alpine"

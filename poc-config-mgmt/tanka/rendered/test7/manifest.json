@@ -1,0 +1,9 @@
+{
+    "apps-v1.Deployment-poc-demo-app.yaml": "environments/test7/main.jsonnet",
+    "apps-v1.StatefulSet-poc-postgres-postgresql.yaml": "environments/test7/main.jsonnet",
+    "external-secrets.io-v1.ExternalSecret-poc-db-credentials.yaml": "environments/test7/main.jsonnet",
+    "v1.ConfigMap-poc-demo-app-config.yaml": "environments/test7/main.jsonnet",
+    "v1.Namespace-poc-cfg-test7.yaml": "environments/test7/main.jsonnet",
+    "v1.Service-poc-demo-app.yaml": "environments/test7/main.jsonnet",
+    "v1.Service-poc-postgres-postgresql.yaml": "environments/test7/main.jsonnet"
+}

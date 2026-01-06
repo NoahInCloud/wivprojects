@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: poc-demo-app-config
+data:
+  PUBLIC_URL: "https://base.example.local"
+  DB_HOST: "poc-postgres-postgresql"
+  DB_PORT: "5432"
+  DB_NAME: "pocdb"
+  DB_USER: "pocapp"
+  ENVIRONMENT: "base"

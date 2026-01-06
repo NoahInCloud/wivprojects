@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: poc-tanka-deployer
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - list:
+        elements:
+          - env: test
+            namespace: poc-cfg-test
+          - env: prod
+            namespace: poc-cfg-prod
+          - env: test7
+            namespace: poc-cfg-test7
+  template:
+    metadata:
+      name: 'poc-tanka-{{ .env }}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/NoahInCloud/wivprojects.git
+        targetRevision: main
+        # Using rendered manifests since ArgoCD doesn't natively support Tanka
+        path: 'poc-config-mgmt/tanka/rendered/{{ .env }}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{ .namespace }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

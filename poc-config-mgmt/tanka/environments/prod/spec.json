@@ -1,0 +1,13 @@
+{
+  "apiVersion": "tanka.dev/v1alpha1",
+  "kind": "Environment",
+  "metadata": {
+    "name": "environments/prod"
+  },
+  "spec": {
+    "apiServer": "https://kubernetes.default.svc",
+    "namespace": "poc-cfg-prod",
+    "resourceDefaults": {},
+    "expectVersions": {}
+  }
+}
