@@ -10,16 +10,6 @@ labels:
   - pairs:
       environment: test
 
-# Override Helm values for test environment
-helmCharts:
-  - name: postgresql
-    repo: https://charts.bitnami.com/bitnami
-    version: "16.4.5"
-    releaseName: poc-postgres
-    namespace: poc-cfg-test
-    includeCRDs: false
-    valuesFile: values-postgres-test.yaml
-
 patches:
   # Update ConfigMap for test environment
   - target:
@@ -33,11 +23,14 @@ patches:
         path: /data/ENVIRONMENT
         value: "test"
   
-  # Use test image tag
+  # Update PostgreSQL storage class
   - target:
-      kind: Deployment
-      name: poc-demo-app
+      kind: StatefulSet
+      name: poc-postgres-postgresql
     patch: |-
       - op: replace
-        path: /spec/template/spec/containers/0/image
-        value: "nginx:1.25-alpine"
+        path: /spec/volumeClaimTemplates/0/spec/storageClassName
+        value: "gp2"
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: "1Gi"

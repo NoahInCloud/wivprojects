@@ -1,17 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-# Use Helm chart inflator via kustomize
-helmCharts:
-  - name: postgresql
-    repo: https://charts.bitnami.com/bitnami
-    version: "16.4.5"
-    releaseName: poc-postgres
-    namespace: poc-cfg-base
-    includeCRDs: false
-    valuesFile: values-postgres.yaml
-
+# Use pre-rendered Helm chart (ArgoCD compatible approach)
 resources:
+  - helm-rendered/postgres.yaml
   - demo-app-deployment.yaml
   - demo-app-configmap.yaml
   - demo-app-service.yaml

@@ -11,16 +11,6 @@ labels:
   - pairs:
       environment: production
 
-# Override Helm values for prod environment
-helmCharts:
-  - name: postgresql
-    repo: https://charts.bitnami.com/bitnami
-    version: "16.4.5"
-    releaseName: poc-postgres
-    namespace: poc-cfg-prod
-    includeCRDs: false
-    valuesFile: values-postgres-prod.yaml
-
 patches:
   # Update ConfigMap for prod environment
   - target:
@@ -34,7 +24,7 @@ patches:
         path: /data/ENVIRONMENT
         value: "production"
   
-  # Use stable image tag for prod
+  # Use stable image tag for prod with more replicas
   - target:
       kind: Deployment
       name: poc-demo-app
@@ -45,3 +35,15 @@ patches:
       - op: replace
         path: /spec/replicas
         value: 2
+
+  # Update PostgreSQL storage for prod
+  - target:
+      kind: StatefulSet
+      name: poc-postgres-postgresql
+    patch: |-
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/storageClassName
+        value: "gp2"
+      - op: replace
+        path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+        value: "5Gi"
